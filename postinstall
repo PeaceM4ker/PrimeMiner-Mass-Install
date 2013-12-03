@@ -1,0 +1,38 @@
+#!/bin/bash
+sudo apt-get install screen -y
+echo "running initial update" | wall
+sudo apt-get update -y
+echo "downloading and installing gitcore" | wall
+sudo apt-get install git -y
+echo "installing python dependencies" | wall
+sudo apt-get install python-software-properties -y
+echo "installing extra OS dependencies" | wall
+sudo apt-get install software-properties-common -y
+echo "performing another update (just in case)" | wall
+sudo apt-get update -y
+echo "installing libssl and libgmp" | wall
+sudo apt-get install build-essential libssl-dev libgmp-dev -y
+echo "adding bitcoin repo" | wall
+sudo add-apt-repository ppa:bitcoin/bitcoin -y
+echo "performing update with bitcoin repo" | wall
+sudo apt-get update -y
+echo "installing libdb as database" | wall
+sudo apt-get install libdb4.8-dev libdb4.8++-dev -y
+echo "installing libboost" | wall
+sudo apt-get install libboost-all-dev -y
+echo "installing optional libboost modules (just in case)" | wall
+sudo apt-get install libboost-chrono1.48-dev libboost-filesystem1.48-dev libboost-system1.48-dev libboost-program-options1.48-dev libboost-thread1.48-dev -y
+echo "downloading primecoin miner" | wall
+sudo git clone https://github.com/thbaumbach/primecoin
+echo "lets build it! making the makefile" | wall
+cd ~/primecoin/src
+sed -i -e 's/$(OPENSSL_INCLUDE_PATH))/$(OPENSSL_INCLUDE_PATH) \/usr\/local\/include)/' makefile.unix
+sed -i -e 's/$(OPENSSL_LIB_PATH))/$(OPENSSL_LIB_PATH) \/usr\/local\/lib)/' makefile.unix
+sed -i -e 's/$(LDHARDENING) $(LDFLAGS)/$(LDHARDENING) -Wl,-rpath,\/usr\/local\/lib $(LDFLAGS)/' makefile.unix
+make -f makefile.unix
+echo "making run script" | wall
+echo "~/primecoin/src/primeminer -pooluser=ARwYkELSaFPxEpQ6xbouxrHMk1Ta56FDA9 -poolpassword=0 -poolip=rpool.net -poolport=8336 -genproclimit=4" > ~/run
+chmod a+x ~/run
+echo "done"
+
+
